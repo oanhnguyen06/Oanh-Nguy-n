@@ -1,0 +1,296 @@
+import { Lecturer } from './types';
+
+// ==========================================
+// CSV PARSING LOGIC
+// ==========================================
+
+// Helper to parse the raw text blocks into array strings (handling bullets)
+export const parseBulletPoints = (text: string): string[] => {
+  if (!text) return [];
+  return text.split('\n')
+    .map(s => s.trim().replace(/^[•·-]\s*/, ''))
+    .filter(s => s.length > 0);
+};
+
+// Robust CSV Parser that handles quoted strings and newlines
+export const parseCSV = (csvText: string): string[][] => {
+  const rows: string[][] = [];
+  let currentRow: string[] = [];
+  let currentField = '';
+  let inQuotes = false;
+  
+  // Normalize line endings
+  const text = csvText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const nextChar = text[i + 1];
+    
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        currentField += '"'; // Double quote inside quote
+        i++;
+      } else {
+        inQuotes = !inQuotes; // Toggle quote mode
+      }
+    } else if (char === ',' && !inQuotes) {
+      currentRow.push(currentField);
+      currentField = '';
+    } else if (char === '\n' && !inQuotes) {
+      currentRow.push(currentField);
+      rows.push(currentRow);
+      currentRow = [];
+      currentField = '';
+    } else {
+      currentField += char;
+    }
+  }
+  
+  // Add last row if exists
+  if (currentField || currentRow.length > 0) {
+    currentRow.push(currentField);
+    rows.push(currentRow);
+  }
+  
+  return rows;
+};
+
+// ==========================================
+// DATA SOURCE
+// ==========================================
+
+// Column Order: id, name, title, department, email, phone, image, education, workHistory, researchArea, teachingSubjects
+export const RAW_CSV_DATA = `id,name,title,department,email,phone,image,education,workHistory,researchArea,teachingSubjects
+1,"Lê Hiếu Học","PGS.TS","Khoa Khoa học & Công nghệ Giáo dục, Đại học Bách khoa Hà Nội","hoc.lehieu@hust.edu.vn","(+84) 24 3868 1432","https://ui-avatars.com/api/?name=Le+Hieu+Hoc&background=0D8ABC&color=fff&size=256","2001 – 2005: Tiến sĩ Xã hội học & Nghiên cứu Xã hội (chuyên ngành Khoa học Quản lý), Đại học Trento, Ý
+1999 – 2000: Thạc sĩ Quản trị Kinh doanh (Quản lý Công nghệ), Asian Institute of Technology (AIT), Bangkok, Thái Lan
+1998 – 1999: Văn bằng Sau đại học Quản trị Kinh doanh, Swiss AIT Vietnam Management Development Program, TP.HCM
+1994 – 1996: Cử nhân Ngữ văn Anh, Đại học Mở Hà Nội
+1991 – 1996: Cử nhân Kinh tế Xây dựng & Quản lý, Đại học Xây dựng Hà Nội
+1989 – 1991: Tốt nghiệp THPT, Trường THPT Thăng Long","04/2022 – nay: Trưởng khoa Khoa học & Công nghệ Giáo dục, ĐHBK Hà Nội
+06/2019 – 03/2022: Phó Hiệu trưởng, Trường Đại học Phenikaa (phụ trách CTSV, Tuyển sinh, Truyền thông & PR)
+06/2019 – 09/2020: PGS, Trưởng khoa Kinh tế & Kinh doanh, Trường Đại học Phenikaa
+05/2018 – 05/2019: PGS, Trường Kinh tế & Quản lý, Trường ĐHBK Hà Nội (nay là ĐHBK Hà Nội)
+09/2000 – 05/2018: Giảng viên, Trường Kinh tế & Quản lý, Trường ĐHBK Hà Nội
+12/2013 – 05/2019: Giám đốc Trung tâm Truyền thông & Quan hệ công chúng, Trường ĐHBK Hà Nội
+01/2013 – 12/2013: Phó Trưởng khoa, Trường Kinh tế & Quản lý, Trường ĐHBK Hà Nội (phụ trách HTQT & NCKH)
+03/2017: Trao đổi học thuật tại University of Trento (Ý)
+10–11/2013: Trao đổi học thuật tại Innsbruck University (Áo)
+05/2000 – 05/2001: Cán bộ Chương trình, Trung tâm AIT tại Việt Nam (AITCV)
+07/1996 – 02/1998: Chuyên viên Quản lý dự án, Tổng công ty CONSTREXIM","Quản trị, Quản lý chất lượng (TQM/ISO)
+Đạo đức kinh doanh & Trách nhiệm xã hội doanh nghiệp (CSR)
+Liên kết Đại học – Doanh nghiệp, chuyển giao công nghệ
+Quản lý giáo dục & phát triển chương trình đào tạo",""
+2,"Phạm Thị Thanh Hải","PGS.TS","Khoa Khoa học & Công nghệ Giáo dục, Đại học Bách khoa Hà Nội","hai.phamthithanh@hust.edu.vn","","https://ui-avatars.com/api/?name=Pham+Thi+Thanh+Hai&background=0D8ABC&color=fff&size=256","2013: Tiến sĩ Quản lý giáo dục, Trường Đại học Sư phạm Hà Nội
+2005: Thạc sĩ Quản lý giáo dục, Trường Đại học Vinh
+1993: Cử nhân Tiếng Anh, Trường Sư phạm Ngoại ngữ, Đại học Quốc gia
+1993: Cử nhân Tiếng Nga, Trường Sư phạm Ngoại ngữ, Đại học Quốc gia","2023 – nay: Giảng viên, Khoa Khoa học & Công nghệ Giáo dục, ĐHBK Hà Nội
+2015 – 2022: Giảng viên cao cấp; Trưởng phòng Khoa học – Hợp tác phát triển, Trường ĐH Giáo dục (ĐHQGHN)
+2014 – 2015: Phó Trưởng phòng phụ trách Phòng Khoa học & Quan hệ Quốc tế, Trường ĐH Giáo dục (ĐHQGHN)
+2007 – 2014: Điều phối viên Giám sát & Đánh giá, Dự án Giáo dục Đại học 2; Dự án Mô hình Trường học Mới Việt Nam (MOET)
+1997 – 2007: Điều phối viên các dự án nghiên cứu quốc tế, Trường Đại học Vinh","Công nghệ giáo dục
+Đánh giá tác động Dự án Mô hình Trường học Mới Việt Nam (VNEN)
+Tăng cường năng lực nghiên cứu khoa học của nghiên cứu viên & giảng viên
+Đánh giá thực trạng tính tự chủ & trách nhiệm xã hội
+Số hoá & tái bối cảnh hoá các tiếp cận học tập lấy SV làm trung tâm
+Nghiên cứu đánh giá năng lực chuyên môn GV mới vào nghề",""
+3,"Nguyễn Thị Huyền","TS","Khoa Khoa học & Công nghệ Giáo dục, Đại học Bách khoa Hà Nội","huyen.nguyenthi2@hust.edu.vn","(+84) 24 3868 2451","https://ui-avatars.com/api/?name=Nguyen+Thi+Huyen&background=0D8ABC&color=fff&size=256","2019: Tiến sĩ Công nghệ Giáo dục, National Central University, Taiwan
+2014: Thạc sĩ Khoa học Máy tính, National Central University, Taiwan
+2009: Kỹ sư Công nghệ Thực phẩm, Học viện Nông nghiệp Việt Nam","05/2020 – nay: Giảng viên, Trường Đại học Bách Khoa Hà Nội
+03/2019 – 04/2021: Kỹ sư Phân tích Nghiệp vụ & R&D Công nghệ, Viettel Business Solution
+09/2010 – 09/2015: Kỹ sư Phần mềm, Tập đoàn Wistron, Taipei, Taiwan","Interactive Learning System
+Mobile Learning / MicroLearning / E-learning
+Game-Based Learning
+GenAI & Education
+Learning Design and Technology",""
+4,"Bùi Ngọc Sơn","ThS","Bộ môn Sư phạm các ngành kỹ thuật, Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội","son.buingoc@hust.edu.vn","+84-24 38681432","https://ui-avatars.com/api/?name=Bui+Ngoc+Son&background=0D8ABC&color=fff&size=256","2004: Thạc sĩ Sư phạm Dạy nghề, Trường ĐHBK Hà Nội; Trường Đại học Kỹ thuật Tổng hợp Dresden, CHLB Đức
+2000: Kỹ sư Điều khiển học kỹ thuật, Trường ĐHBK Hà Nội","2000 – nay: Cán bộ giảng dạy, Viện Sư phạm Kỹ thuật, Trường ĐHBK Hà Nội","Kiểm tra, đánh giá trong giáo dục
+Phát triển chương trình đào tạo
+Công nghệ giáo dục: xây dựng, phát triển, ứng dụng phương tiện mới trong dạy – học
+Nghiên cứu ứng dụng công nghệ mới (VR/AR) trong dạy học
+E-learning, Blended Learning","ED3140: Công nghệ dạy học
+ED3180: Thực hành thiết kế phim dạy học
+ED3190: Thực hành thiết kế Hypermedia trong dạy học
+ED3220: Kỹ năng mềm
+ED3070: Nhập môn khoa học công nghệ
+ED3200: Tổ chức quá trình dạy học trên mạng"
+5,"Nguyễn Thị Thanh Tú","TS","Bộ môn Sư phạm các ngành kỹ thuật, Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội","tu.nguyenthithanh@hust.edu.vn","+84-24 38682451","https://ui-avatars.com/api/?name=Nguyen+Thi+Thanh+Tu&background=0D8ABC&color=fff&size=256","2014: Tiến sĩ Công nghệ thông tin, Trường Đại học Bách Khoa Hà Nội
+2007: Thạc sĩ Công nghệ thông tin, Trường Đại học Ulsan, Hàn Quốc
+2004: Kỹ sư Công nghệ thông tin, Trường Đại học Bách Khoa Hà Nội","06/2020 – nay: Giảng viên, Bộ môn Sư phạm các ngành kỹ thuật, Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội
+2004 – 05/2020: Cán bộ, Trung tâm Mạng Thông tin, Trường ĐHBK Hà Nội","","(Đang cập nhật)"
+6,"Vũ Đình Minh","TS","Bộ môn Sư phạm các ngành kỹ thuật, Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội","minh.vudinh@hust.edu.vn","(+84) 24 3868 2451","https://ui-avatars.com/api/?name=Vu+Dinh+Minh&background=0D8ABC&color=fff&size=256","2020: Tiến sĩ CNTT, Shibaura Institute of Technology, Nhật Bản
+2014: Thạc sĩ CNTT, Đại học Bách Khoa Hà Nội
+2009: Kỹ sư CNTT, Đại học Mở Hà Nội","05/2022 – nay: Giảng viên Bộ môn Sư phạm các ngành kỹ thuật, Đại học Bách Khoa Hà Nội
+03/2011 – 04/2020: Cán bộ Trung tâm Mạng Thông tin, Đại học Bách Khoa Hà Nội
+09/2009 – 03/2011: Kỹ sư phần mềm, Tập đoàn Công nghệ CMC","",""
+7,"Nguyễn Thị Thanh Thủy","TS","Bộ môn Sư phạm các ngành kỹ thuật, Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội","thuy.nguyenthithanh@hust.edu.vn","+84-24 38682451","https://ui-avatars.com/api/?name=Nguyen+Thi+Thanh+Thuy&background=0D8ABC&color=fff&size=256","2021: Tiến sĩ Quản lý giáo dục, Viện Khoa học Giáo dục Việt Nam
+2014: Thạc sĩ Quản trị kinh doanh, Trường Đại học Kinh tế – ĐHQG Hà Nội
+2011: Cử nhân Quản trị kinh doanh, Trường Đại học Kinh tế – Kỹ thuật Công nghiệp","05/2022 – nay: Giảng viên, Bộ môn Sư phạm các ngành kỹ thuật, Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội
+2012 – 04/2023: Nghiên cứu viên, Viện Khoa học Giáo dục Việt Nam","Khoa học giáo dục
+Quản lý giáo dục
+Phân tích và dự báo nhu cầu đào tạo nhân lực","(Đang cập nhật)"
+8,"Đặng Thu Hương","ThS","Khoa Khoa học & Công nghệ Giáo dục, ĐHBK Hà Nội","huong.dangthu@hust.edu.vn","+84-979168089","https://ui-avatars.com/api/?name=Dang+Thu+Huong&background=0D8ABC&color=fff&size=256","2016: Thạc sĩ Kỹ thuật, Lý luận và phương pháp dạy học, Trường ĐHBK Hà Nội
+2013: Cử nhân Sư phạm kỹ thuật tin học, Trường ĐHBK Hà Nội","08/2013 – nay: Giảng viên thực hành, Viện Sư phạm Kỹ thuật, Trường ĐHBK Hà Nội
+09/2014 – nay: Bí thư Liên chi đoàn Viện Sư phạm Kỹ thuật, Trường ĐHBK Hà Nội","Quản lý giáo dục
+Công nghệ giáo dục
+Lý luận và phương pháp dạy học
+E-learning, B-learning","ED3140: Công nghệ dạy học
+ED3180: Thực hành thiết kế phim dạy học
+ED4070: Thực tập sư phạm
+ED3153: Thực hành nghề cơ bản KTCK
+ED3154: Thực hành nghề cơ bản CNTT
+ED3151: Thực hành nghề cơ bản KTDT
+ED3160: Kỹ năng dạy học (Thực nghiệm)
+ED3200: Tổ chức quá trình dạy học trên mạng (Thực nghiệm)
+ED4080: Đồ án tốt nghiệp cử nhân"
+9,"Nguyễn Yến Chi","ThS","Khoa Khoa học & Công nghệ Giáo dục, ĐHBK Hà Nội","chi.nguyenyen@hust.edu.vn","(+84) 912 997 301","https://ui-avatars.com/api/?name=Nguyen+Yen+Chi&background=0D8ABC&color=fff&size=256","12/2023 – nay: Nghiên cứu sinh, Lý luận & Phương pháp dạy học, Trường Đại học Bách Khoa Hà Nội
+2019: Thạc sĩ Quản lý giáo dục, University of Bristol, Vương quốc Anh
+2016: Cử nhân Kinh tế đối ngoại, Trường Đại học Ngoại thương","10/2023 – nay: Trợ giảng, Khoa KH&CN Giáo dục, Trường Đại học Bách Khoa Hà Nội
+05/2020 – 10/2023: Chuyên viên, Văn phòng Đại học, Trường Đại học Bách Khoa Hà Nội
+01/2020 – 05/2020: Chuyên viên, Hệ thống giáo dục Vinschool","Quản lý giáo dục
+Công nghệ giáo dục
+Học tập tự điều chỉnh",""
+10,"Nguyễn Trần Khánh Phương","CN","Khoa Khoa học & Công nghệ Giáo dục, ĐHBK Hà Nội","phuong.nguyentrankhanh@hust.edu.vn","","https://ui-avatars.com/api/?name=Nguyen+Tran+Khanh+Phuong&background=0D8ABC&color=fff&size=256","08/2025 – nay: Thạc sĩ Sư phạm Kỹ thuật, ĐHBK Hà Nội
+2024: Cử nhân Nghệ thuật số / Nghiên cứu Truyền thông và Thông tin, Đại học Stetson, Hoa Kỳ","07/2025 – nay: Giảng viên tạo nguồn, Khoa Khoa học & Công nghệ Giáo dục, ĐHBK Hà Nội
+09/2024 – 06/2025: Cán bộ, Trung tâm Truyền thông & Tri thức số, ĐHBK Hà Nội","",""
+11,"Nguyễn Thị Duyên","TS","Bộ môn Khoa học & Công nghệ giáo dục, Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội","duyen.nguyenthi@hust.edu.vn","+84-24 38682451","https://ui-avatars.com/api/?name=Nguyen+Thi+Duyen&background=0D8ABC&color=fff&size=256","2021: Tiến sĩ Lý luận & lịch sử giáo dục, Viện Khoa học Giáo dục Việt Nam
+2014: Thạc sĩ Lý luận & lịch sử giáo dục, Trường Đại học Sư phạm Hà Nội
+2004: Cử nhân Tâm lý giáo dục, Trường Đại học Sư phạm Hà Nội","05/2023 – nay: Giảng viên, Bộ môn Khoa học & Công nghệ giáo dục, Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội
+02/2022 – 04/2023: Giảng viên, Trường Đại học Giáo dục – ĐHQG Hà Nội
+2004 – 05/2020: Giảng viên, Trường Đại học Sư phạm Kỹ thuật Hưng Yên","Tâm lý ứng dụng
+Giáo dục nghề nghiệp
+Tư vấn hướng nghiệp
+Kỹ năng mềm
+Quản lý giáo dục nghề nghiệp","ED3280: Tâm lý học ứng dụng
+ED2030: Thiết kế dạy học
+ED3300: Kĩ năng dạy học"
+12,"Nguyễn Văn Hạnh","TS","Bộ môn Khoa học và Công nghệ giáo dục, Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội","hanh.nguyenvan@hust.edu.vn","+84-24 38681432","https://ui-avatars.com/api/?name=Nguyen+Van+Hanh&background=0D8ABC&color=fff&size=256","2017: Tiến sĩ Khoa học Giáo dục, Trường Đại học Sư phạm Hà Nội
+2013: Thạc sĩ Kỹ thuật Cơ khí Động lực, Trường Đại học Bách Khoa Hà Nội
+2008: Cử nhân Sư phạm Kỹ thuật, Trường Đại học Sư phạm Hà Nội","11/2018 – nay: Giảng viên, Bộ môn Khoa học & Công nghệ Giáo dục, Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội
+11/2008 – 10/2018: Giảng viên, Khoa Sư phạm Kỹ thuật, Trường ĐHSPKT Hưng Yên","Lý thuyết Công nghệ giáo dục
+Triết học kĩ thuật và công nghệ
+Lý thuyết phương pháp dạy học
+Giáo dục học đại học, nghề nghiệp và phổ thông
+Giáo dục STEM
+Giáo dục dựa vào trải nghiệm","ED3280: Tâm lý học ứng dụng
+ED3220: Kỹ năng mềm
+ED3120: Giáo dục học
+ED2030: Thiết kế dạy học
+ED4100: Mô phỏng trong giáo dục
+ED3330: Giáo dục người lớn"
+13,"Bùi Thị Thúy Hằng","PGS.TS","Khoa Khoa học & Công nghệ Giáo dục, ĐHBK Hà Nội","hang.buithithuy@hust.edu.vn","+84-24 38681432","https://ui-avatars.com/api/?name=Bui+Thi+Thuy+Hang&background=0D8ABC&color=fff&size=256","2007: Tiến sĩ, Khoa học Giáo dục, Trường Đại học Paris X, Nanterre, Cộng hòa Pháp
+2002: Thạc sĩ, Khoa học Giáo dục, Trường Đại học Paris X, Nanterre, Cộng hòa Pháp
+2001: Chứng chỉ Tâm lý thực hành, Trường Đại học Tâm lý Thực hành, Paris, Cộng hòa Pháp
+2000: Cử nhân Giáo dục tiểu học, Trường Đại học Sư phạm Hà Nội, Việt Nam","2008–2009: Giảng viên, Khoa Giáo dục, Học viện Quản lý Giáo dục, Hà Nội
+2009–2012: Giảng viên, Khoa Các Khoa học Giáo dục, Trường Đại học Giáo Dục, ĐHQGHN
+2013–2019: Giảng viên, Viện Sư phạm Kỹ thuật, Trường Đại học Bách Khoa Hà Nội","Động cơ học tập của học sinh/sinh viên
+Phong cách giảng dạy, giáo dục, học tập
+Giáo dục hướng nghiệp và đào tạo nghề
+Nhân cách thanh niên/sinh viên
+Siêu nhận thức và phát triển kỹ năng siêu nhận thức
+Giáo dục đại học ở Việt Nam và trên thế giới
+Sư phạm thông minh và nhà trường thông minh","Lịch sử giáo dục
+Tâm lí học
+Giáo dục học
+Phương pháp hướng dẫn học tập
+Kỹ năng mềm
+Giáo dục học so sánh
+Quản lí dự án giáo dục
+Giáo dục đại học Pháp và trên thế giới"
+14,"Lê Huy Tùng","PGS.TS","Bộ môn Sư phạm các ngành kỹ thuật, Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội","tung.lehuy@hust.edu.vn","+84-24 38682451","https://ui-avatars.com/api/?name=Le+Huy+Tung&background=0D8ABC&color=fff&size=256","2012: Tiến sĩ Điều khiển hệ thống và Tự động hóa, Đại học Quốc gia Kyungpook, Hàn Quốc
+2003: Thạc sĩ Đo lường và các hệ thống điều khiển, Trường Đại học Bách Khoa Hà Nội
+1999: Kỹ sư Tự động hóa, Trường Đại học Bách Khoa Hà Nội","11/2018 – nay: Giảng viên Viện Sư phạm Kỹ thuật; Phó Viện trưởng Viện Đào tạo Liên tục, ĐHBK Hà Nội
+2014 – 10/2018: Giảng viên Viện SPKT; Phó Giám đốc, sau đó Giám đốc Trung tâm Đảm bảo Chất lượng, ĐHBK Hà Nội
+04/2012 – 08/2019: Giảng viên; Trưởng Bộ môn Sư phạm các ngành kỹ thuật, Viện SPKT, ĐHBK Hà Nội
+02/2008 – 11/2011: Nghiên cứu sinh, PTN Điều khiển hệ thống và Tự động hóa, ĐH Quốc gia Kyungpook (Hàn Quốc)
+09/2000 – 01/2008: Giảng viên Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội","","ED3170: Phương pháp luận nghiên cứu khoa học
+ED3220: Kỹ năng mềm
+ED4090: Technical Writing and Presentation
+ED4110: Các công nghệ giáo dục tiên tiến
+ED6110: Quản lý chất lượng giáo dục nghề nghiệp (Thạc sĩ)
+ED7070: Kỹ năng mềm trong nghiên cứu (NCS)"
+15,"Phạm Mạnh Hà","PGS.TS","Khoa Khoa học và Công nghệ Giáo dục, ĐHBK Hà Nội","Ha.phammanh@hust.edu.vn","090.480.1212","https://ui-avatars.com/api/?name=Pham+Manh+Ha&background=0D8ABC&color=fff&size=256","2006 – 2011: Tiến sĩ Tâm lý học, Trường ĐHKHXH&NV, ĐHQGHN
+2001 – 2004: Thạc sĩ Tâm lý học, Trường ĐHKHXH&NV, ĐHQGHN
+1993 – 1997: Cử nhân Tâm lý học, Trường ĐHKHXH&NV, ĐHQGHN","1998 – 2013: Giảng viên, Trường ĐHKHXH&NV, ĐHQGHN
+2013 – 2018: Giảng viên, Học viện Thanh thiếu niên Việt Nam
+2018 – 2025: Giảng viên, Trường Đại học Giáo dục, ĐHQGHN
+06/2025 – nay: Giảng viên, Khoa Khoa học & Công nghệ Giáo dục, ĐHBK Hà Nội
+Chủ tịch Hội đồng chuyên môn, Viện Nghiên cứu Đào tạo Can thiệp Tâm lý Việt Nam","Tâm lý học giáo dục
+Tâm lý học hướng nghiệp
+Tư vấn tâm lý học đường
+Phát triển kỹ năng sống",""
+16,"Dương Thị Thùy Mai","TS","Bộ môn Công nghệ Giáo dục, Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội","mai.duongthithuy@hust.edu.vn","","https://ui-avatars.com/api/?name=Duong+Thi+Thuy+Mai&background=0D8ABC&color=fff&size=256","2018: Tiến sĩ Ngôn ngữ học, Viện Hàn Lâm KHXH Việt Nam
+2006: Thạc sĩ Ngôn ngữ học ứng dụng, ĐH Northumbria, Newcastle, Vương quốc Anh
+2000: Cử nhân Ngôn ngữ Anh, Đại học Hà Nội","11/2023 – nay: Phó Giám đốc Trung tâm Đào tạo Liên tục, ĐHBK Hà Nội
+06/2019 – nay: Giảng viên, Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội
+01/2019 – 06/2019: Phó Giám đốc Trung tâm Ngôn ngữ và Hỗ trợ trao đổi học thuật, ĐHBK Hà Nội
+10/2010 – 10/2018: Giám đốc Trung tâm Ngoại ngữ, ĐHBK Hà Nội
+03/2010 – 09/2010: Phó Giám đốc Trung tâm Ngoại ngữ, ĐHBK Hà Nội","Công nghệ giáo dục
+Quản lý giáo dục
+Lý luận & phương pháp dạy học
+Giảng dạy ngoại ngữ và CLIL
+Giáo dục nghề nghiệp","IT2030 / ED4090: Technical Writing and Presentation
+ED3350: Tiếng Anh chuyên ngành Công nghệ giáo dục
+ED3370: Đồ án chiến lược dạy học trong kỷ nguyên số
+ED4080: Đồ án tốt nghiệp cử nhân
+ED4160: Đồ án trải nghiệm thực địa
+ED3280: Tâm lý học ứng dụng
+ED3220: Kỹ năng mềm"
+17,"Nguyễn Tiến Long","TS","Bộ môn Khoa học & Công nghệ Giáo dục, Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội","long.nguyentien@hust.edu.vn","0918 953 535","https://ui-avatars.com/api/?name=Nguyen+Tien+Long&background=0D8ABC&color=fff&size=256","2013: Tiến sĩ Cơ khí, Đại học Cát Lâm (Jilin University), Trung Quốc
+2004: Thạc sĩ Cơ khí, Trường Đại học Bách Khoa Hà Nội
+2000: Kỹ sư Cơ khí, Trường Đại học Bách Khoa Hà Nội","2000 – nay: Giảng viên, Bộ môn Khoa học & Công nghệ Giáo dục, Viện Sư phạm Kỹ thuật, Trường Đại học Bách Khoa Hà Nội (hiện là Phó Viện trưởng)","Kỹ năng mềm
+Thiết kế & phát triển chương trình đào tạo
+Kỹ năng dạy học
+Quản lý giáo dục nghề nghiệp","ED3220: Kỹ năng mềm
+ED3230: Lý thuyết thiết kế chương trình đào tạo
+ED6071: CS quốc gia và CSPL của giáo dục
+ED6130: Lịch sử phát triển giáo dục nghề nghiệp"
+18,"Phạm Hồng Hạnh","ThS","Viện Sư phạm Kỹ thuật, Trường Đại học Bách Khoa Hà Nội","hanh.phamhong@hust.edu.vn","+84-24 38681432","https://ui-avatars.com/api/?name=Pham+Hong+Hanh&background=0D8ABC&color=fff&size=256","2002: Thạc sĩ Đo lường và Hệ thống điều khiển, Trường Đại học Bách Khoa Hà Nội
+1999: Kỹ sư Điều khiển học kỹ thuật, Trường Đại học Bách Khoa Hà Nội","2000 – nay: Giảng viên, Viện Sư phạm Kỹ thuật, Trường Đại học Bách Khoa Hà Nội","Lý luận và phương pháp dạy học
+Ứng dụng công nghệ trong dạy học","ED3130: Lý luận dạy học
+ED3160: Kỹ năng dạy học
+ED4060: Thực hành giảng dạy
+ED3220: Kỹ năng mềm
+ED3110: Tâm lý học"
+19,"Hoàng Thị Quỳnh Lan","TS","Bộ môn Khoa học & Công nghệ Giáo dục, Viện Sư phạm Kỹ thuật, ĐHBK Hà Nội","lan.hoangthiquynh@hust.edu.vn","+84-24 38681432","https://ui-avatars.com/api/?name=Hoang+Thi+Quynh+Lan&background=0D8ABC&color=fff&size=256","2016: Tiến sĩ Tâm lý học, Học viện Khoa học Xã hội Việt Nam
+1999: Thạc sĩ Tâm lý học, Trường Đại học Sư phạm Hà Nội
+1994: Cử nhân Tâm lý học, Trường Đại học KHXH&NV","2018 – nay: Giảng viên, Bộ môn Khoa học & Công nghệ Giáo dục, Trường Đại học Bách Khoa Hà Nội
+2016 – 2018: Phó Trưởng khoa, Khoa Giáo dục, Học viện Quản lý Giáo dục
+2015 – 2018: Phó Trưởng bộ môn, Khoa Giáo dục, Học viện Quản lý Giáo dục
+2011 – 2015: Giảng viên, Khoa Giáo dục, Học viện Quản lý Giáo dục
+2007 – 2011: Cán bộ tư vấn, Dự án tư vấn trực tuyến về SKSS, SKTD, HIV/AIDS – CIHP","Giáo dục kỹ năng sống cho trẻ em
+Hoạt động học tập, kỹ năng học tập của sinh viên
+Khó khăn, rối nhiễu tâm lý và sức khỏe tâm thần trẻ em
+Tham vấn, tư vấn tâm lý
+Tư vấn hướng nghiệp cho thanh thiếu niên","ED1010: Tâm lý học
+ED3280: Tâm lý học ứng dụng
+ED6130: Tâm lý học sư phạm (chương trình Thạc sĩ)"
+20,"Trần Thị Thanh Hà","TS","Khoa Khoa học & Công nghệ Giáo dục, ĐHBK Hà Nội","ha.tranthithanh@hust.edu.vn","0966 140 480","https://ui-avatars.com/api/?name=Tran+Thi+Thanh+Ha&background=0D8ABC&color=fff&size=256","2021: Tiến sĩ Giáo dục học, Đại học Tây Sydney (University of Western Sydney), Australia
+2010: Thạc sĩ Địa lý học (Địa lý kinh tế – xã hội), Trường Đại học Sư phạm Hà Nội
+2008: Cử nhân Khoa học ngành Sư phạm Địa lý, Trường Đại học Sư phạm Hà Nội","10/2024 – nay: Giảng viên, Khoa Khoa học & Công nghệ Giáo dục, Trường Đại học Bách Khoa Hà Nội
+11/2021 – 09/2024: Giảng viên, Trường Đại học Giáo dục – ĐHQGHN
+2010 – 10/2021: Giảng viên, Trường Cao đẳng Yên Bái","Lãnh đạo giáo dục
+Bình đẳng giáo dục
+Phát triển chuyên môn giáo viên",""`;
+
+/**
+ * MOCK DATA PARSER
+ */
+const getMockData = (): Lecturer[] => {
+  const rawRows = parseCSV(RAW_CSV_DATA);
+  return rawRows.slice(1).map((row) => {
+    const getVal = (idx: number) => row[idx] ? row[idx].trim() : '';
+    return {
+      id: parseInt(getVal(0)) || 0,
+      name: getVal(1),
+      title: getVal(2),
+      department: getVal(3),
+      email: getVal(4),
+      phone: getVal(5),
+      image: getVal(6),
+      education: parseBulletPoints(getVal(7)),
+      workHistory: parseBulletPoints(getVal(8)),
+      researchArea: parseBulletPoints(getVal(9)),
+      teachingSubjects: parseBulletPoints(getVal(10))
+    };
+  });
+};
