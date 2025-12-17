@@ -6,9 +6,8 @@ import { ChatWidget } from './components/ChatWidget';
 import { Pagination } from './components/Pagination';
 import { Lecturer } from './types';
 import { api } from './services/api';
-import { Filter, Database, Loader2 } from 'lucide-react';
+import { Filter, Loader2 } from 'lucide-react';
 
-// Updated to 4 per page as per screenshot instructions
 const ITEMS_PER_PAGE = 4;
 
 function App() {
@@ -73,14 +72,14 @@ function App() {
       
       <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
-      <main className="flex-grow container mx-auto px-4 py-8 max-w-7xl">
+      <main className="flex-grow container mx-auto px-4 md:px-8 py-8 max-w-7xl">
         
         {/* Statistics & Intro */}
-        <div className="mb-6">
-          <h1 className="text-[28px] font-bold text-[#003478] mb-1">
+        <div className="mb-8">
+          <h1 className="text-[26px] font-bold text-[#003478] mb-1">
             Danh sách giảng viên — Khoa KH&CN Giáo dục
           </h1>
-          <p className="text-gray-500 text-[15px]">
+          <p className="text-gray-500 text-[14px]">
             Click vào ảnh hoặc tên để xem chi tiết. Phân trang hiển thị {ITEMS_PER_PAGE} giảng viên / trang.
           </p>
         </div>
@@ -95,10 +94,10 @@ function App() {
               
               <button
                 onClick={() => setSelectedDepartment('All')}
-                className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                className={`px-4 py-1.5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-colors border ${
                   selectedDepartment === 'All'
-                    ? 'bg-[#003478] text-white shadow-md'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                    ? 'bg-[#003478] text-white border-[#003478]'
+                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
                 }`}
               >
                 Tất cả
@@ -108,10 +107,10 @@ function App() {
                 <button
                   key={dept}
                   onClick={() => setSelectedDepartment(dept)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                  className={`px-4 py-1.5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-colors border ${
                     selectedDepartment === dept
-                      ? 'bg-[#003478] text-white shadow-md'
-                      : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                      ? 'bg-[#003478] text-white border-[#003478]'
+                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
                   }`}
                 >
                   {dept}

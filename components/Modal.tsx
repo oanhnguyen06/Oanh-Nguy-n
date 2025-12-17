@@ -11,22 +11,22 @@ export const Modal: React.FC<ModalProps> = ({ lecturer, onClose }) => {
   if (!lecturer) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#001530] bg-opacity-70 backdrop-blur-[2px] animate-fade-in font-sans">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col relative animate-scale-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#001530] bg-opacity-60 backdrop-blur-[2px] animate-fade-in font-sans">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col relative animate-scale-in">
         
         {/* Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-[#003478] hover:bg-blue-50 rounded-full transition-all z-10"
+          className="absolute top-4 right-4 text-gray-400 hover:text-[#003478] hover:bg-blue-50 p-1 rounded-full transition-colors z-10"
         >
-          <X size={22} strokeWidth={2.5} />
+          <X size={24} strokeWidth={2} />
         </button>
 
         <div className="flex flex-col md:flex-row h-full overflow-y-auto custom-scrollbar">
           
           {/* Left Sidebar: Profile */}
-          <div className="w-full md:w-[32%] bg-white p-6 md:p-8 flex flex-col md:border-r border-gray-100 shrink-0">
-             <div className="w-full aspect-[4/5] mb-5 rounded-lg overflow-hidden shadow-sm border border-gray-100">
+          <div className="w-full md:w-[350px] bg-white p-6 md:p-8 flex flex-col md:border-r border-gray-100 shrink-0">
+             <div className="w-[80%] md:w-full mx-auto aspect-[3/4] mb-6 rounded-lg overflow-hidden shadow-sm border border-gray-100">
                 <img 
                   src={lecturer.image} 
                   alt={lecturer.name} 
@@ -34,23 +34,21 @@ export const Modal: React.FC<ModalProps> = ({ lecturer, onClose }) => {
                 />
             </div>
             
-            <h2 className="text-2xl font-extrabold text-[#003478] mb-1 leading-tight">
+            <h2 className="text-[22px] font-extrabold text-[#003478] mb-1 leading-tight">
               {lecturer.title}. {lecturer.name}
             </h2>
-            
-            {/* Role */}
-            <p className="text-gray-500 font-medium mb-2 text-sm">
+             <p className="text-gray-500 font-medium mb-3 text-[14px]">
                  {lecturer.workHistory[0]?.toLowerCase().includes('trưởng khoa') ? 'Trưởng khoa' : 
                   lecturer.workHistory[0]?.toLowerCase().includes('phó trưởng khoa') ? 'Phó Trưởng khoa' : 'Giảng viên'}
             </p>
             
-            <p className="text-gray-600 text-[14px] leading-relaxed mb-6">
+            <p className="text-gray-600 text-[14px] leading-relaxed mb-6 border-t border-gray-100 pt-3">
                 {lecturer.department}
             </p>
             
-            <div className="w-full space-y-3 mt-auto">
+            <div className="w-full space-y-2.5 mt-auto">
               {lecturer.email && (
-                <div className="text-[14px]">
+                <div className="text-[14px] break-words">
                     <span className="font-bold text-[#003478]">Email: </span>
                     <a href={`mailto:${lecturer.email}`} className="text-gray-700 hover:text-blue-600 transition-colors">{lecturer.email}</a>
                 </div>
@@ -69,18 +67,18 @@ export const Modal: React.FC<ModalProps> = ({ lecturer, onClose }) => {
           </div>
 
           {/* Right Content: Details */}
-          <div className="w-full md:w-[68%] p-6 md:p-8 space-y-8 bg-white">
+          <div className="flex-1 p-6 md:p-10 space-y-8 bg-[#FAFBFC]">
             
             {/* 1. Chuyên môn */}
             {lecturer.researchArea.length > 0 && (
               <section>
-                <h3 className="text-[18px] font-extrabold text-[#003478] mb-3">
+                <h3 className="text-[18px] font-extrabold text-[#003478] mb-3 border-b border-gray-200 pb-2">
                     Chuyên môn
                 </h3>
-                <ul className="space-y-1.5">
+                <ul className="space-y-2">
                   {lecturer.researchArea.map((item, idx) => (
-                    <li key={idx} className="flex gap-2 text-[#2c3e50] leading-snug text-[15px]">
-                      <span className="text-[#003478] font-bold">•</span>
+                    <li key={idx} className="flex gap-3 text-[#2c3e50] leading-normal text-[15px] items-start">
+                      <span className="text-[#003478] font-bold text-lg leading-none">•</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -90,14 +88,14 @@ export const Modal: React.FC<ModalProps> = ({ lecturer, onClose }) => {
 
             {/* 2. Môn giảng dạy */}
             <section>
-                <h3 className="text-[18px] font-extrabold text-[#003478] mb-3">
+                <h3 className="text-[18px] font-extrabold text-[#003478] mb-3 border-b border-gray-200 pb-2">
                     Môn giảng dạy
                 </h3>
                 {lecturer.teachingSubjects.length > 0 ? (
-                   <ul className="space-y-1.5">
+                   <ul className="space-y-2">
                     {lecturer.teachingSubjects.map((item, idx) => (
-                      <li key={idx} className="flex gap-2 text-[#2c3e50] leading-snug text-[15px]">
-                        <span className="text-[#003478] font-bold">•</span>
+                      <li key={idx} className="flex gap-3 text-[#2c3e50] leading-normal text-[15px] items-start">
+                        <span className="text-[#003478] font-bold text-lg leading-none">•</span>
                         <span>{item}</span>
                       </li>
                     ))}
@@ -112,13 +110,13 @@ export const Modal: React.FC<ModalProps> = ({ lecturer, onClose }) => {
              {/* 3. Quá trình đào tạo */}
              {lecturer.education.length > 0 && (
               <section>
-                 <h3 className="text-[18px] font-extrabold text-[#003478] mb-3">
+                 <h3 className="text-[18px] font-extrabold text-[#003478] mb-3 border-b border-gray-200 pb-2">
                     Quá trình đào tạo
                 </h3>
-                <ul className="space-y-1.5">
+                <ul className="space-y-2">
                   {lecturer.education.map((item, idx) => (
-                    <li key={idx} className="flex gap-2 text-[#2c3e50] leading-snug text-[15px]">
-                       <span className="text-[#003478] font-bold">•</span>
+                    <li key={idx} className="flex gap-3 text-[#2c3e50] leading-normal text-[15px] items-start">
+                       <span className="text-[#003478] font-bold text-lg leading-none">•</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -129,13 +127,13 @@ export const Modal: React.FC<ModalProps> = ({ lecturer, onClose }) => {
             {/* 4. Quá trình công tác (Extra) */}
              {lecturer.workHistory.length > 0 && (
               <section>
-                 <h3 className="text-[18px] font-extrabold text-[#003478] mb-3">
+                 <h3 className="text-[18px] font-extrabold text-[#003478] mb-3 border-b border-gray-200 pb-2">
                     Quá trình công tác
                 </h3>
-                <ul className="space-y-1.5">
+                <ul className="space-y-2">
                   {lecturer.workHistory.map((item, idx) => (
-                    <li key={idx} className="flex gap-2 text-[#2c3e50] leading-snug text-[15px]">
-                       <span className="text-[#003478] font-bold">•</span>
+                    <li key={idx} className="flex gap-3 text-[#2c3e50] leading-normal text-[15px] items-start">
+                       <span className="text-[#003478] font-bold text-lg leading-none">•</span>
                       <span>{item}</span>
                     </li>
                   ))}

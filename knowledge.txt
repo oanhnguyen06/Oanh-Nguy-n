@@ -1,0 +1,38 @@
+CHƯƠNG TRÌNH ĐÀO TẠO CỬ NHÂN CÔNG NGHỆ GIÁO DỤC
+Hai thập niên gần đây, những tiến bộ trong công nghệ đã thúc đẩy toàn cầu hoá và chuyển đổi số; đồng thời tạo ra nhiều công việc có nhu cầu cao và đòi hỏi học sinh, sinh viên phải có những kỹ năng cần thiết để thành công trong sự nghiệp tương lai. 
+Bên cạnh đó, đại dịch COVID-19 vừa diễn ra đã chứng minh tại sao giáo dục trực tuyến nên là một phần quan trọng của việc dạy và học. Bằng việc tích hợp công nghệ vào hoạt động đào tạo hiện có, thay vì chỉ sử dụng nó như một công cụ quản lý khủng hoảng, các cơ sở giáo dục, tổ chức và doanh nghiệp có thể khai thác việc học trực tuyến như một công cụ giáo dục mạnh mẽ. 
+MỤC TIÊU CỦA CHƯƠNG TRÌNH ĐÀO TẠO CÔNG NGHỆ GIÁO DỤC:
+1. Năng lực thiết kế, phát triển đa phương tiện và thiết bị dạy học hiện đại.
+2. Năng lực thiết kế, phát triển các phần mềm giáo dục có tính tương tác ảo (game giáo dục, mô phỏng, VR-AR).
+3. Năng lực thiết kế, phát triển các nội dung dạy học số (bài giảng e-learning).
+4. Năng lực thiết kế, phát triển các cổng đào tạo trực tuyến; vận hành, quản trị các hệ thống dạy học trực tuyến.
+5. Năng lực thiết kế, phát triển các môi trường học tập số.
+6. Năng lực nghiên cứu đề xuất, thiết kế và phát triển các giải pháp chuyển đổi số trong giáo dục.
+CƠ HỘI NGHỀ NGHIỆP NGÀNH CÔNG NGHỆ GIÁO DỤC:
+1. Chuyên viên phân tích nghiệp vụ (Business Analyst) giáo dục.
+2. Chuyên viên quản trị hệ thống quản lý học tập (LMS).
+3. Chuyên viên thiết kế và sáng tạo nội dung học tập đa phương tiện (videos, VR, AR...).
+4. Chuyên viên thiết kế và sáng tạo khoá học số.
+5. Chuyên viên thiết kế học liệu theo hướng tiếp cận STEAM/STEM.
+6. Kỹ thuật viên quản trị hệ thống dạy học trực tuyến.
+TUYỂN SINH CÔNG NGHỆ GIÁO DỤC:
+Mã xét tuyển: ED2
+Tổ hợp xét tuyển: A00, A01, D01, K01 (Tư duy).
+
+CHƯƠNG TRÌNH ĐÀO TẠO CỬ NHÂN QUẢN LÝ GIÁO DỤC
+Ngành Quản lý giáo dục là ngành không thể thiếu trong bối cảnh giáo dục hiện đại, hướng tới đào tạo nguồn nhân lực chuyên nghiệp, chất lượng cao có nền tảng kiến thức vững vàng về khoa học và quản lý giáo dục, kết hợp với kỹ năng số.
+MỤC TIÊU CỦA CHƯƠNG TRÌNH ĐÀO TẠO QUẢN LÝ GIÁO DỤC:
+1. Kiến thức nền tảng và chuyên môn vững chắc để đáp ứng yêu cầu quản lý giáo dục và quản lý chất lượng.
+2. Kỹ năng nghề nghiệp và phẩm chất cá nhân cần thiết.
+3. Năng lực hình thành ý tưởng, thiết kế, triển khai và vận hành các dự án quản lý giáo dục.
+4. Năng lực dạy học và quản lý các khóa đào tạo tại doanh nghiệp.
+CƠ HỘI NGHỀ NGHIỆP NGÀNH QUẢN LÝ GIÁO DỤC:
+1. Chuyên viên quản lý hành chính giáo dục tại Bộ GD&ĐT, Sở GD&ĐT...
+2. Chuyên viên phụ trách văn hóa, giáo dục tại UBND các cấp.
+3. Chuyên viên tại các trung tâm, viện nghiên cứu giáo dục.
+4. Chuyên viên hành chính, tài chính, tuyển sinh, truyền thông tại các trường học.
+5. Chuyên viên khảo thí, kiểm định chất lượng.
+6. Khởi nghiệp cung ứng dịch vụ giáo dục.
+TUYỂN SINH QUẢN LÝ GIÁO DỤC:
+Mã xét tuyển: ED3
+Tổ hợp xét tuyển: A00, A01, D01, K01 (Tư duy).
